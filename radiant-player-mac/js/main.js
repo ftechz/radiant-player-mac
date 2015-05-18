@@ -23,7 +23,7 @@ if (typeof window.MusicAPI === 'undefined') {
     window.MusicAPI.Volume = {
 
         // A reference to the volume slider element.
-        slider: document.querySelector('#vslider'),
+        slider: document.querySelector('#material-vslider'),
 
         // Get the current volume level.
         getVolume: function() {
@@ -44,8 +44,12 @@ if (typeof window.MusicAPI === 'undefined') {
 
         // Increase the volume by an amount (default of 1).
         increaseVolume: function(amount) {
-            if (typeof amount === 'undefined') 
+            if (typeof amount === 'undefined') {
                 amount = 1;
+            }
+            else {
+                amount /= 5;
+            }
 
             for (var i = 0; i < amount; i++) {
                 window.Keyboard.sendKey(window.MusicAPI.Volume.slider, window.Keyboard.KEY_UP);
@@ -54,8 +58,12 @@ if (typeof window.MusicAPI === 'undefined') {
 
         // Decrease the volume by an amount (default of 1).
         decreaseVolume: function(amount) {
-            if (typeof amount === 'undefined') 
+            if (typeof amount === 'undefined') {
                 amount = 1;
+            }
+            else {
+                amount /= 5;
+            }
 
             for (var i = 0; i < amount; i++) {
                 window.Keyboard.sendKey(window.MusicAPI.Volume.slider, window.Keyboard.KEY_DOWN);
@@ -67,11 +75,11 @@ if (typeof window.MusicAPI === 'undefined') {
     window.MusicAPI.Playback = {
 
         // References to the media playback elements.
-        _eplayPause:  document.querySelector('button[data-id="play-pause"]'),
-        _eforward:    document.querySelector('button[data-id="forward"]'),
-        _erewind:     document.querySelector('button[data-id="rewind"]'),
-        _eshuffle:    document.querySelector('button[data-id="shuffle"]'),
-        _erepeat:     document.querySelector('button[data-id="repeat"]'),
+        _eplayPause:  document.querySelector('sj-icon-button[data-id="play-pause"]'),
+        _eforward:    document.querySelector('sj-icon-button[data-id="forward"]'),
+        _erewind:     document.querySelector('sj-icon-button[data-id="rewind"]'),
+        _eshuffle:    document.querySelector('sj-icon-button[data-id="shuffle"]'),
+        _erepeat:     document.querySelector('sj-icon-button[data-id="repeat"]'),
 
         // Playback modes.
         STOPPED:    0,
@@ -86,18 +94,18 @@ if (typeof window.MusicAPI === 'undefined') {
         // Shuffle modes.
         ALL_SHUFFLE:    'ALL_SHUFFLE',
         NO_SHUFFLE:     'NO_SHUFFLE',
-        
+
         // Time functions.
         getPlaybackTime: function() {
             return parseInt(slider.getAttribute('aria-valuenow'));
         },
-        
+
         setPlaybackTime: function(milliseconds) {
             var percent = milliseconds / parseFloat(slider.getAttribute('aria-valuemax'));
             var lower = slider.offsetLeft + 6;
             var upper = slider.offsetLeft + slider.clientWidth - 6;
             var x = lower + percent*(upper - lower);
-            
+
             window.Mouse.clickAtLocation(slider, x, 0)
         },
 
@@ -106,17 +114,17 @@ if (typeof window.MusicAPI === 'undefined') {
         forward:        function() { MusicAPI.Playback._eforward.click(); },
         rewind:         function() { MusicAPI.Playback._erewind.click(); },
 
-        getShuffle:     function() { return MusicAPI.Playback._eshuffle.value; }, 
+        getShuffle:     function() { return MusicAPI.Playback._eshuffle.value; },
         toggleShuffle:  function() { MusicAPI.Playback._eshuffle.click(); },
 
         getRepeat:      function() {
             return MusicAPI.Playback._erepeat.value;
         },
 
-        changeRepeat:   function(mode) { 
+        changeRepeat:   function(mode) {
             if (!mode) {
                 // Toggle between repeat modes once.
-                MusicAPI.Playback._erepeat.click(); 
+                MusicAPI.Playback._erepeat.click();
             }
             else {
                 // Toggle between repeat modes until the desired mode is activated.
@@ -143,19 +151,21 @@ if (typeof window.MusicAPI === 'undefined') {
 
         // Get current rating.
         getRating: function() {
-            var el = document.querySelector('.player-rating-container li.selected');
+            var rating = 0;
+            var el = document.querySelectorAll('.player-rating-container sj-icon-button');
 
-            if (el) {
-                return el.value;
+            for (var i in el) {
+                if(el[i].title.contains("Undo")) {
+                    rating = parseInt(el[i].data-rating);
+                    break;
+                }
             }
-            else {
-                return 0;
-            }
+            return rating;
         },
 
         // Thumbs up.
         toggleThumbsUp: function() {
-            var el = document.querySelector('.player-rating-container li[data-rating="5"]');
+            var el = document.querySelector('.player-rating-container sj-icon-button[data-rating="5"]');
 
             if (el)
                 el.click();
@@ -163,7 +173,7 @@ if (typeof window.MusicAPI === 'undefined') {
 
         // Thumbs down.
         toggleThumbsDown: function() {
-            var el = document.querySelector('.player-rating-container li[data-rating="1"]');
+            var el = document.querySelector('.player-rating-container sj-icon-button[data-rating="1"]');
 
             if (el)
                 el.click();
@@ -171,7 +181,7 @@ if (typeof window.MusicAPI === 'undefined') {
 
         // Set a star rating.
         setStarRating: function(rating) {
-            var el = document.querySelector('.player-rating-container li[data-rating="' + rating + '"]');
+            var el = document.querySelector('.player-rating-container sj-icon-button[data-rating="' + rating + '"]');
 
             if (el)
                 el.click();
@@ -193,7 +203,7 @@ if (typeof window.MusicAPI === 'undefined') {
                 return id.substring(0, id.indexOf('/'));
             };
 
-            if (albumEl === null && aristEl === null) 
+            if (albumEl === null && aristEl === null)
                 return null;
 
             var albumId = parseID(albumEl.dataset.id);
@@ -201,7 +211,7 @@ if (typeof window.MusicAPI === 'undefined') {
 
             if (albumId) {
                 url = urlTemplate + albumId;
-            } 
+            }
             else if (artistId) {
                 url = urlTemplate + artistId;
             }
@@ -220,14 +230,14 @@ if (typeof window.MusicAPI === 'undefined') {
                 var target = m.addedNodes[i];
                 var name = target.id || target.className;
 
-                if (name == 'text-wrapper')  {
+                if (name == 'now-playing-info-wrapper')  {
                     var now = new Date();
 
-                    var title = document.querySelector('#playerSongTitle');
+                    var title = document.querySelector('#player-song-title');
                     var artist = document.querySelector('#player-artist');
                     var album = document.querySelector('.player-album');
                     var art = document.querySelector('#playingAlbumArt');
-                    var duration = parseInt(document.querySelector('#player #slider').getAttribute('aria-valuemax')) / 1000;
+                    var duration = parseInt(document.querySelector('#material-player-progress').getAttribute('aria-valuemax')) / 1000;
 
                     title = (title) ? title.innerText : 'Unknown';
                     artist = (artist) ? artist.innerText : 'Unknown';
@@ -324,13 +334,17 @@ if (typeof window.MusicAPI === 'undefined') {
                 window.GoogleMusicApp.ratingChanged(target.dataset.rating);
             }
         });
+                                              }
+                                              catch(e) {
+                                              alert("Exception in playbackTimeObserver: " + e);
+                                              }
     });
-    
+
 
     addObserver.observe(document.querySelector('#playerSongInfo'), { childList: true, subtree: true });
     shuffleObserver.observe(document.querySelector('#player button[data-id="shuffle"]'), { attributes: true });
-    repeatObserver.observe(document.querySelector('#player button[data-id="repeat"]'), { attributes: true });
-    playbackObserver.observe(document.querySelector('#player button[data-id="play-pause"]'), { attributes: true });
-    playbackTimeObserver.observe(document.querySelector('#player #slider'), { attributes: true });
+    repeatObserver.observe(document.querySelector('#player sj-icon-button[data-id="repeat"]'), { attributes: true });
+    playbackObserver.observe(document.querySelector('#player sj-icon-button[data-id="play-pause"]'), { attributes: true });
+    playbackTimeObserver.observe(document.querySelector('#player #material-player-progress'), { attributes: true });
     ratingObserver.observe(document.querySelector('#player .player-rating-container'), { attributes: true, subtree: true });
 }
